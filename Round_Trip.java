@@ -1,21 +1,21 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.StringTokenizer;
+import java.io.*;
+import java.util.*;
 
 public class Round_Trip {
+    public static List<Integer> result = new ArrayList<>();
+    public static boolean found = false;
+    public static int cycleStart = -1, cycleEnd = -1;
+
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
         int n = Integer.parseInt(st.nextToken());
         int m = Integer.parseInt(st.nextToken());
+
         ArrayList<ArrayList<Integer>> graph = new ArrayList<>();
         for (int i = 0; i <= n; i++)
             graph.add(new ArrayList<>());
+
         for (int i = 0; i < m; i++) {
             st = new StringTokenizer(br.readLine());
             int from = Integer.parseInt(st.nextToken());
@@ -24,82 +24,52 @@ public class Round_Trip {
             graph.get(to).add(from);
         }
 
-        boolean ans = isCycle(n+1, graph);
+        boolean[] visited = new boolean[n + 1];
+        int[] parent = new int[n + 1];
 
-        if (ans) {
-            // System.out.println("YES");
-        } else {
-            System.out.println("IMPOSSIBLE");
-        }
-    }
-
-    static boolean checkForCycle(ArrayList<ArrayList<Integer>> adj, int s, boolean vis[], int parent[]) {
-        Queue<Node> q = new LinkedList<>(); // BFS
-        q.add(new Node(s, -1));
-        vis[s] = true;
-
-        // until the queue is empty
-        while (!q.isEmpty()) {
-            // source node and its parent node
-            int node = q.peek().first;
-            int par = q.peek().second;
-            q.remove();
-
-            // go to all the adjacent nodes
-            for (Integer it : adj.get(node)) {
-                if (!vis[it]) {
-                    q.add(new Node(it, node));
-                    vis[it] = true;
-                    parent[it] = node;
-                }
-
-                // if adjacent node is visited and is not its own parent node
-                else if (par != it) {
-                    // Cycle detected, reconstruct the path
-                    ArrayList<Integer> cycle = new ArrayList<>();
-                    cycle.add(it);
-                    int current = node;
-                    while (current != -1 && current != it) { // Ensure valid parent index
-                        cycle.add(current);
-                        current = parent[current];
-                    }
-                    cycle.add(it); // Close the cycle
-                    System.out.println(cycle.size());
-                    // System.out.println("Cycle Path: " + cycle);
-                    for(int i : cycle)
-                        System.out.print(i + " ");
-                    return true;
+        for (int i = 1; i <= n; i++) {
+            if (!visited[i]) {
+                if (dfs(graph, visited, parent, i, -1)) {
+                    break;
                 }
             }
         }
 
-        return false;
+        if (!found) {
+            System.out.println("IMPOSSIBLE");
+        } else {
+            List<Integer> path = new ArrayList<>();
+            path.add(cycleStart);
+            for (int v = cycleEnd; v != cycleStart; v = parent[v]) {
+                path.add(v);
+            }
+            path.add(cycleStart);
+            Collections.reverse(path);
+
+            System.out.println(path.size());
+            for (int v : path) {
+                System.out.print(v + " ");
+            }
+        }
     }
 
-    public static boolean isCycle(int V, ArrayList<ArrayList<Integer>> adj) {
-        boolean vis[] = new boolean[V];
-        Arrays.fill(vis, false);
-        int parent[] = new int[V];
-        Arrays.fill(parent, -1);
+    public static boolean dfs(ArrayList<ArrayList<Integer>> graph, boolean[] visited, int[] parent, int v, int par) {
+        visited[v] = true;
+        parent[v] = par;
 
-        for (int i = 0; i < V; i++)
-            if (vis[i] == false)
-                if (checkForCycle(adj, i, vis, parent)) {
-                    // System.out.println(Arrays.toString(parent));
+        for (int to : graph.get(v)) {
+            if (to == par) continue;
+
+            if (visited[to]) {
+                cycleStart = to;
+                cycleEnd = v;
+                found = true;
+                return true;
+            } else {
+                if (dfs(graph, visited, parent, to, v))
                     return true;
-                }
-
+            }
+        }
         return false;
-    }
-
-}
-
-class Node {
-    int first;
-    int second;
-
-    public Node(int first, int second) {
-        this.first = first;
-        this.second = second;
     }
 }

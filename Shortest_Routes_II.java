@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-public class Main {
+public class Shortest_Routes_II {
     static final long INF = (long) 1e15;
 
     public static void main(String[] args) throws IOException {
