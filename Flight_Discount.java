@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-public class Main {
+public class Flight_Discount {
     static BufferedReader br;
     static PrintWriter out;
     static StringTokenizer st;
